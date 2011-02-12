@@ -26,6 +26,12 @@ echo '('.json_encode($response).');';
 echo "\n";
 
 function save_image($file) {
+	$authorization_error = authorize($_POST['key']);
+	if ($authorization_error) {
+		return array('filename' => $file['name'],
+		             'error'    => $authorization_error);
+	}
+	
 	if ($file['error'] == UPLOAD_ERR_OK) {
 		$image_information = getimagesize($file['tmp_name']);
 		$file_extension = image_extension($image_information[2]);
@@ -54,6 +60,18 @@ function save_image($file) {
 	} else {
 		return array('filename' => $file['name'],
 		             'error'    => file_upload_error_message($file['error']));
+	}
+}
+
+// Check the key against your database or whatever to decide if they can upload
+// another image.  Since it's called for every image, you may want to cache the
+// user-lookup part of it.
+// Returns a string error (or something falsy on success).
+function authorize($key) {
+	if ($key == 'foobar') {
+		return '';
+	} else {
+		return 'Unauthorized key.';
 	}
 }
 
